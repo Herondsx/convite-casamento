@@ -19,6 +19,9 @@
   const Som = window.Som || { unlock() {}, startMusic() {}, stopMusic() {}, toggle() {}, isOn: () => false, wantsSound: () => false, sfx() {}, onChange() {}, supported: false };
   const FX = window.FX || { init() {}, petals() {}, heart() {}, crumbs() {}, attract() {}, scatter() {} };
   const params = new URLSearchParams(location.search);
+  // durante a intro o conteúdo não é renderizado (content-visibility); medir algo
+  // lá dentro forçaria o navegador a renderizar tudo (e baixar fontes) antes da hora
+  const contentHidden = () => html.classList.contains('is-intro') && !html.classList.contains('is-revealed');
 
   /* ------------------------------------------------------------------
      Dados derivados da configuração
@@ -156,22 +159,18 @@
   function buildForests() {
     $$('.forest').forEach((f, fi) => {
       const layers = $$('.forest__layer', f).map((svg, li) => {
-        const w = Math.max(320, Math.round(svg.clientWidth)), h = Math.max(60, Math.round(svg.clientHeight));
-        const lvl = svg.classList.contains('forest__layer--1') ? 1 : svg.classList.contains('forest__layer--2') ? 2 : 3;
-        const conf = { 3: [0.5, 1.0, 0.45], 2: [0.45, 0.98, 0.5], 1: [0.4, 0.95, 0.62] }[lvl];
         svg.dataset.seed = String(11 + fi * 31 + li * 7);
-        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-        svg.innerHTML = `<path d="${forestPath(w, h, +svg.dataset.seed, conf[0], conf[1], conf[2])}"/>`;
         return { el: svg, depth: parseFloat(svg.dataset.depth) || 0.2 };
       });
       forests.push({ el: f, layers });
     });
   }
   function rebuildForests() {
+    if (contentHidden()) return;
     $$('.forest__layer').forEach((svg) => {
       const w = Math.max(320, Math.round(svg.clientWidth)), h = Math.max(60, Math.round(svg.clientHeight));
       const vb = (svg.getAttribute('viewBox') || '').split(' ');
-      if (Math.abs(+vb[2] - w) < 40 && Math.abs(+vb[3] - h) < 30) return;
+      if (vb.length === 4 && Math.abs(+vb[2] - w) < 40 && Math.abs(+vb[3] - h) < 30) return;
       const lvl = svg.classList.contains('forest__layer--1') ? 1 : svg.classList.contains('forest__layer--2') ? 2 : 3;
       const conf = { 3: [0.5, 1.0, 0.45], 2: [0.45, 0.98, 0.5], 1: [0.4, 0.95, 0.62] }[lvl];
       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
@@ -196,7 +195,7 @@
   }
   function buildVine() {
     const tl = $('#timeline'), svg = $('#vine'), stem = $('#vineStem'), g = $('#vineLeaves'), list = $('#timelineList');
-    if (!tl || $('#programacao').hidden) return;
+    if (!tl || $('#programacao').hidden || contentHidden()) return;
     const W = tl.clientWidth, H = tl.clientHeight;
     if (!W || !H) return;
     const mobile = window.matchMedia('(max-width: 720px)').matches;
@@ -388,8 +387,24 @@
       pix.hidden = false;
       $('#pixKey').textContent = P.chave;
       $('#pixName').textContent = P.nome ? `Em nome de ${P.nome}` : '';
-      try { if (window.qrcode) $('#pixQr').innerHTML = qrSVG(payload); else $('#pixQr').hidden = true; }
-      catch (e) { $('#pixQr').hidden = true; }
+      // o gerador de QR (20 KB) só é baixado quando a seção de presentes se aproxima
+      const drawQR = () => {
+        try { $('#pixQr').innerHTML = qrSVG(payload); } catch (e) { $('#pixQr').hidden = true; }
+      };
+      const loadQR = () => {
+        if (window.qrcode) { drawQR(); return; }
+        const sc = document.createElement('script');
+        sc.src = 'assets/js/vendor/qrcode.min.js';
+        sc.onload = drawQR;
+        sc.onerror = () => { $('#pixQr').hidden = true; };
+        document.head.appendChild(sc);
+      };
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((ents) => {
+          if (ents.some((en) => en.isIntersecting)) { io.disconnect(); loadQR(); }
+        }, { rootMargin: '900px 0px' });
+        io.observe($('#presentes'));
+      } else loadQR();
       pix.addEventListener('click', async (e) => {
         const b = e.target.closest('[data-copy]');
         if (!b) return;
@@ -478,6 +493,11 @@
     const nums = { d: $('[data-u="d"]', box), h: $('[data-u="h"]', box), m: $('[data-u="m"]', box), s: $('[data-u="s"]', box) };
     const heart = $('.heartbeat');
     const cur = {};
+    // só anima quando a contagem está na tela (fora dela, apenas troca o texto)
+    let visible = !('IntersectionObserver' in window);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((ents) => { visible = ents[0].isIntersecting; }, { rootMargin: '100px 0px' }).observe(box);
+    }
     function setNum(k, val, min) {
       const str = String(val).padStart(min, '0');
       const el = nums[k];
@@ -501,9 +521,10 @@
         const old = d.lastElementChild, nu = document.createElement('span');
         nu.textContent = ch;
         d.appendChild(nu);
-        if (reduce || !nu.animate) { old.remove(); return; }
+        if (reduce || !visible || !nu.animate) { old.remove(); return; }
+        // só transform/opacity: roda inteiro na GPU
         old.animate([{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(-75%)', opacity: 0 }], { duration: 520, easing: 'cubic-bezier(.5,0,.2,1)', fill: 'forwards' }).onfinish = () => old.remove();
-        nu.animate([{ transform: 'translateY(75%)', opacity: 0, filter: 'blur(4px)' }, { transform: 'translateY(0)', opacity: 1, filter: 'blur(0)' }], { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        nu.animate([{ transform: 'translateY(75%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)' });
       });
       el.setAttribute('aria-label', str);
       cur[k] = str;
@@ -530,7 +551,7 @@
       setNum('h', Math.floor((diff % 864e5) / 36e5), 2);
       setNum('m', Math.floor((diff % 36e5) / 6e4), 2);
       setNum('s', Math.floor((diff % 6e4) / 1e3), 2);
-      if (heart && !reduce) { heart.classList.remove('beat'); void heart.getBoundingClientRect(); heart.classList.add('beat'); }
+      if (heart && !reduce && visible) { heart.classList.remove('beat'); void heart.getBoundingClientRect(); heart.classList.add('beat'); }
       return true;
     }
     const loop = () => { if (update()) setTimeout(loop, 1000 - (Date.now() % 1000) + 8); };
@@ -736,6 +757,15 @@
     sync();
   }
 
+  // pausa a névoa fora da tela (menos trabalho de GPU e bateria no celular)
+  function initFog() {
+    if (!('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver((ents) => {
+      ents.forEach((en) => en.target.classList.toggle('is-off', !en.isIntersecting));
+    }, { rootMargin: '150px 0px' });
+    $$('.site .fog').forEach((f) => io.observe(f));
+  }
+
   function initHeroHearts() {
     const hero = $('#inicio');
     let lastT = 0, lx = 0, ly = 0;
@@ -808,6 +838,7 @@
     let ticking = false;
     const update = () => {
       ticking = false;
+      if (contentHidden()) return;
       const y = window.scrollY || 0, vh = window.innerHeight;
       html.classList.toggle('is-scrolled', y > vh * 0.55);
       if (!reduce && y < vh * 1.3) heroMedia.style.transform = `translate3d(0, ${(y * 0.3).toFixed(1)}px, 0)`;
@@ -833,6 +864,13 @@
       }, 180);
     }, { passive: true });
     update();
+  }
+
+  // medidas dependem de layout: refaz ramo e floresta (com leve debounce)
+  let relayoutT = 0;
+  function relayout() {
+    clearTimeout(relayoutT);
+    relayoutT = setTimeout(() => { buildVine(); rebuildForests(); }, 60);
   }
 
   /* ------------------------------------------------------------------
@@ -893,7 +931,7 @@
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
       env.style.animationPlayState = 'paused';
-      await preload(['assets/img/papel-relevo.webp', 'assets/img/selo.webp', 'assets/img/forro-tile.webp', 'assets/img/casal-blur.webp'], 2500);
+      await preload(['assets/img/papel-relevo.webp', 'assets/img/selo.webp', 'assets/img/selo-postal.webp', 'assets/img/casal-blur.webp'], 2500);
       env.style.animationPlayState = 'running';
       Som.sfx('whoosh');
       await wait(T(1500));
@@ -901,6 +939,8 @@
       setHint(touch ? 'Toque no envelope' : 'Clique no envelope', 200);
       armNudge();
       orbit();
+      // enquanto a pessoa abre o envelope, a foto da capa e o forro já vão sendo baixados
+      ['assets/img/casal.webp', 'assets/img/forro-tile.webp', 'assets/img/papel-relevo-tile.webp'].forEach((u) => { const i = new Image(); i.decoding = 'async'; i.src = u; });
     }
 
     async function flip() {
@@ -931,6 +971,7 @@
       await wait(T(330));
       seal.classList.remove('is-shaking');
       seal.classList.add('is-cracked');
+      back.classList.add('is-broken');
       if (navigator.vibrate) { try { navigator.vibrate(18); } catch (e) { /* ok */ } }
       const bb = back.getBoundingClientRect(), sb = seal.getBoundingClientRect();
       FX.crumbs(back, sb.left - bb.left + sb.width / 2, sb.top - bb.top + sb.height / 2, 12);
@@ -990,6 +1031,7 @@
       if (done) return;
       done = true;
       FX.attract(null);
+      requestAnimationFrame(relayout);
       clearTimeout(nudgeT); clearTimeout(hintT);
       root.classList.add('is-gone');
       bg.classList.add('is-gone');
@@ -1109,6 +1151,7 @@
      Inicialização
      ------------------------------------------------------------------ */
   function boot() {
+    window.__conviteOk = true;
     bindAll();
     buildSprigs();
     buildTimeline();
@@ -1123,6 +1166,7 @@
     initTilt();
     initReveal();
     initHeroHearts();
+    initFog();
     initPill();
     initCountdown();
     FX.init($('#fireflies'));
@@ -1137,10 +1181,12 @@
       Intro.start();
     }
 
-    const afterLayout = () => { buildVine(); rebuildForests(); };
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(afterLayout);
-    window.addEventListener('load', afterLayout);
-    afterLayout();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(relayout);
+      if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', relayout);
+    }
+    window.addEventListener('load', relayout);
+    relayout();
     initScroll();
 
     $('#replayBtn').addEventListener('click', () => {

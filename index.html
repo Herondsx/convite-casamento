@@ -27,11 +27,33 @@
 
   <link rel="preload" href="assets/fonts/corinthia-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/eb-garamond-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/img/papel-relevo.webp" as="image" type="image/webp">
-  <link rel="preload" href="assets/img/selo.webp" as="image" type="image/webp">
+  <link rel="preload" href="assets/img/papel-relevo.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="preload" href="assets/img/selo.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="preload" href="assets/img/selo-postal.webp" as="image" type="image/webp" fetchpriority="high">
 
   <link rel="stylesheet" href="assets/css/style.css">
-  <script>document.documentElement.classList.replace('no-js', 'js');</script>
+  <script>
+    (function (h) {
+      h.classList.replace('no-js', 'js');
+      // envelope fechado desde o primeiro quadro: o conteúdo atrás dele nem é renderizado
+      // (economiza fontes, CPU e dados no celular). Links com #secao pulam o envelope.
+      var hash = location.hash;
+      if (!hash || hash === '#inicio') h.classList.add('is-intro', 'is-locked');
+      // segurança: se o JavaScript principal falhar, mostra o conteúdo mesmo assim
+      addEventListener('load', function () {
+        setTimeout(function () {
+          if (window.__conviteOk) return;
+          h.classList.remove('is-intro', 'is-locked');
+          h.classList.add('is-revealed');
+          ['intro', 'introBg'].forEach(function (id) { var e = document.getElementById(id); if (e) e.style.display = 'none'; });
+        }, 1500);
+      });
+    })(document.documentElement);
+  </script>
+  <script src="assets/js/config.js" defer fetchpriority="high"></script>
+  <script src="assets/js/audio.js" defer fetchpriority="high"></script>
+  <script src="assets/js/fx.js" defer fetchpriority="high"></script>
+  <script src="assets/js/main.js" defer fetchpriority="high"></script>
 </head>
 <body>
   <!-- ===================== Ícones (sprite) ===================== -->
@@ -178,11 +200,12 @@
                   </div>
                   <div class="paper-sheen paper-sheen--back" aria-hidden="true"></div>
 
+                  <span class="seal-ring" aria-hidden="true"></span>
                   <button class="seal" id="seal" type="button" aria-label="Romper o selo de cera e abrir o envelope">
                     <span class="seal__whole"></span>
                     <span class="seal__half seal__half--l"></span>
                     <span class="seal__half seal__half--r"></span>
-                    <span class="seal__glint"></span>
+                    <span class="seal__glint"><i></i></span>
                   </button>
                 </div>
 
@@ -204,7 +227,7 @@
     <section class="hero" id="inicio" aria-label="Início">
       <div class="hero__media" id="heroMedia">
         <div class="hero__zoom">
-          <img src="assets/img/casal.webp" alt="Heron e Daniela se beijando em um campo enevoado, cercados por pinheiros, ao anoitecer" width="1122" height="1402" fetchpriority="high" decoding="async">
+          <img src="assets/img/casal.webp" alt="Heron e Daniela se beijando em um campo enevoado, cercados por pinheiros, ao anoitecer" width="1122" height="1402" loading="lazy" decoding="async">
         </div>
       </div>
       <div class="hero__shade" aria-hidden="true"></div>
@@ -426,10 +449,5 @@
 
   <noscript><style>.intro,.intro-bg,.fab{display:none!important}</style></noscript>
 
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/vendor/qrcode.min.js" defer></script>
-  <script src="assets/js/audio.js" defer></script>
-  <script src="assets/js/fx.js" defer></script>
-  <script src="assets/js/main.js" defer></script>
 </body>
 </html>

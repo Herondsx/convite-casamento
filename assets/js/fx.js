@@ -9,12 +9,16 @@
   'use strict';
 
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  // aparelho modesto? começa econômico; o governador em tick() também se adapta em tempo real
+  var lite = !!((navigator.deviceMemory && navigator.deviceMemory <= 3) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 3));
 
   /* ---------------- Vagalumes ---------------- */
   var cv, ctx, W = 0, H = 0, dpr = 1, flies = [], sprites = [], raf = 0, last = 0, running = false;
   var pointer = { x: -1e4, y: -1e4, t: -1e4 };
   var attr = null; // órbita ao redor de um ponto (ex.: o envelope)
   var lastScroll = window.scrollY || 0, scrollAcc = 0;
+  var ema = 16.7, slowFrames = 0, frameN = 0;
 
   function makeSprite(r, g, b) {
     var s = document.createElement('canvas'), N = 64;
@@ -48,11 +52,12 @@
 
   function resize() {
     if (!cv) return;
-    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    // os brilhos são difusos: no celular, desenhar em 1x é imperceptível e bem mais leve
+    dpr = Math.min(window.devicePixelRatio || 1, coarse ? 1 : 1.5);
     W = window.innerWidth; H = window.innerHeight;
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var target = Math.round(Math.max(16, Math.min(46, (W * H) / 24000)));
+    var target = Math.round(Math.max(16, Math.min(46, (W * H) / 24000)) * (lite ? 0.6 : 1));
     while (flies.length < target) flies.push(makeFly());
     if (flies.length > target) flies.length = target;
   }
@@ -60,7 +65,14 @@
   function tick(now) {
     raf = 0;
     if (!running) return;
-    var dt = Math.min(0.05, (now - last) / 1000 || 0.016);
+    var rawDt = now - last;
+    // governador: se o aparelho não sustenta ~45 fps, reduz a quantidade e desenha a 30 fps
+    ema += (Math.min(rawDt, 100) - ema) * 0.05;
+    if (!lite && ema > 24) {
+      if (++slowFrames > 60) { lite = true; flies.length = Math.max(10, Math.round(flies.length * 0.6)); }
+    } else slowFrames = 0;
+    if (lite && (frameN++ & 1)) { raf = requestAnimationFrame(tick); return; }
+    var dt = Math.min(0.05, rawDt / 1000 || 0.016);
     last = now;
     ctx.clearRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'lighter';

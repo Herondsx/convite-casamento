@@ -27,6 +27,15 @@ feito para rodar no **GitHub Pages**.
 - Silhuetas de pinheiros em parallax, menu, botão flutuante "Confirmar presença".
 - Funciona com **movimento reduzido** (acessibilidade), teclado e leitores de tela.
 
+## Feito para o celular
+
+Quase todo convidado vai abrir pelo link do WhatsApp, então o convite foi medido num celular simulado com CPU 6× mais lenta e em redes 4G/3G:
+
+- **Animações só na GPU** (`transform`/`opacity`): nada de animar `height`, `top`, `box-shadow`, `background-position` ou `filter`. Na fase mais pesada da abertura, o envelope fica perto de 60 fps, com o pior quadro em ~17 ms.
+- **O conteúdo atrás do envelope não é renderizado** até ele abrir (`content-visibility`). Só 4 das 10 fontes são baixadas no início, e a foto da capa e o gerador de QR carregam enquanto a pessoa abre o envelope. São 288 KB até o envelope ficar pronto para tocar: cerca de 0,5 s no 4G e 1,6 s no 3G.
+- Os vagalumes são desenhados em 1× no celular e se adaptam sozinhos (menos partículas, 30 fps) se o aparelho não acompanhar. A névoa pausa fora da tela, e a música e as animações param quando a aba fica em segundo plano.
+- Toques com alvos de 44 px e área de toque tolerante no envelope. Arrastar a carta com o dedo, giroscópio no Android e vibração ao quebrar o selo. Respeita a área segura (notch), usa `svh` para as barras do navegador e campos com fonte ≥ 16 px (o iPhone não dá zoom ao digitar).
+
 ## 1. Publicar no GitHub Pages
 
 1. Faça o merge desta branch na `main` (ou use a branch atual no passo 3).
