@@ -23,7 +23,7 @@ feito para rodar no **GitHub Pages**.
 - Traje com paleta de cores.
 - Presentes: **PIX com QR Code gerado automaticamente** (BR Code válido) e botões "copiar chave" e "PIX copia e cola".
 - **Confirmação de presença** pelo WhatsApp ou direto numa planilha Google, com pétalas ao confirmar.
-- **Trilha sonora gerada no navegador**: uma caixinha de música tocando o Cânone de Pachelbel, além de sons de papel, cera quebrando e carta deslizando. Não usa nenhum arquivo de áudio.
+- **Sons sutis gerados no navegador**: papel ao virar o envelope, cera quebrando, aba e carta deslizando. Não usa arquivos de áudio nem música de fundo, e o botão no canto superior esquerdo silencia (a escolha fica salva).
 - Silhuetas de pinheiros em parallax, menu, botão flutuante "Confirmar presença".
 - Funciona com **movimento reduzido** (acessibilidade), teclado e leitores de tela.
 
@@ -33,7 +33,7 @@ Quase todo convidado vai abrir pelo link do WhatsApp, então o convite foi medid
 
 - **Animações só na GPU** (`transform`/`opacity`): nada de animar `height`, `top`, `box-shadow`, `background-position` ou `filter`. Na fase mais pesada da abertura, o envelope fica perto de 60 fps, com o pior quadro em ~17 ms.
 - **O conteúdo atrás do envelope não é renderizado** até ele abrir (`content-visibility`). Só 4 das 10 fontes são baixadas no início, e a foto da capa e o gerador de QR carregam enquanto a pessoa abre o envelope. São 288 KB até o envelope ficar pronto para tocar: cerca de 0,5 s no 4G e 1,6 s no 3G.
-- Os vagalumes são desenhados em 1× no celular e se adaptam sozinhos (menos partículas, 30 fps) se o aparelho não acompanhar. A névoa pausa fora da tela, e a música e as animações param quando a aba fica em segundo plano.
+- Os vagalumes são desenhados em 1× no celular e se adaptam sozinhos (menos partículas, 30 fps) se o aparelho não acompanhar. A névoa pausa fora da tela, e os vagalumes e os sons param quando a aba fica em segundo plano.
 - Toques com alvos de 44 px e área de toque tolerante no envelope. Arrastar a carta com o dedo, giroscópio no Android e vibração ao quebrar o selo. Respeita a área segura (notch), usa `svh` para as barras do navegador e campos com fonte ≥ 16 px (o iPhone não dá zoom ao digitar).
 
 ## 1. Publicar no GitHub Pages
@@ -59,7 +59,6 @@ Quase todo convidado vai abrir pelo link do WhatsApp, então o convite foi medid
 | `presentes.pix` | **chave PIX**, nome e cidade do recebedor (o QR é gerado sozinho) ⚠️ **a chave atual é de exemplo** |
 | `presentes.lista` | link opcional para uma lista de presentes externa |
 | `rsvp` | **número do WhatsApp** que recebe as confirmações, prazo e máximo de pessoas |
-| `musica` | caminho de um MP3 seu (opcional) e se toca ao abrir o envelope |
 
 Enquanto o PIX ou o WhatsApp não estiverem configurados, aparece um aviso amarelo no próprio convite. Ele some sozinho depois que vocês configuram.
 
@@ -98,13 +97,7 @@ Ao confirmar, o convidado abre o WhatsApp com a mensagem pronta para vocês.
 3. **Implantar → Nova implantação → Tipo: App da Web**. Em *Executar como*, escolha **Eu**; em *Quem pode acessar*, escolha **Qualquer pessoa**. Depois clique em **Implantar**.
 4. Copie a URL gerada para `rsvp.googleScriptUrl`. Se o WhatsApp também estiver configurado, ele vira plano B caso o envio falhe.
 
-## 5. Música
-
-Por padrão o convite toca uma caixinha de música **sintetizada em tempo real** com o Cânone em Ré de Pachelbel (domínio público).
-Para usar uma música sua, coloque o arquivo em `assets/audio/` e preencha `musica.arquivo` (ex.: `'assets/audio/nossa-musica.mp3'`).
-A música começa quando o convidado vira o envelope, já que os navegadores só permitem som depois de um toque. O botão no canto superior esquerdo liga e desliga o som, e a escolha fica salva.
-
-## 6. Ver localmente
+## 5. Ver localmente
 
 ```bash
 python3 -m http.server 8000
@@ -122,7 +115,7 @@ assets/
   js/config.js        ← seus dados
   js/main.js          envelope, contagem, ramo, PIX, RSVP, agenda…
   js/fx.js            vagalumes, pétalas, corações
-  js/audio.js         caixinha de música + efeitos sonoros (Web Audio)
+  js/audio.js         efeitos sonoros sintetizados (Web Audio)
   js/vendor/          gerador de QR Code (MIT)
   img/                texturas, selo, névoa, foto, prévia (og.jpg)
   fonts/              Corinthia, Cormorant Garamond, EB Garamond, Jost (OFL)
@@ -146,4 +139,3 @@ python3 foto.py                                   # foto da capa + versão desfo
 
 - Fontes: [Corinthia](https://github.com/googlefonts/corinthia), [Cormorant Garamond](https://github.com/CatharsisFonts/Cormorant), [EB Garamond](https://github.com/octaviopardo/EBGaramond12) e [Jost](https://github.com/indestructible-type/Jost), todas sob SIL Open Font License 1.1 (veja `assets/fonts/OFL.txt`).
 - QR Code: [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator), de Kazuhiko Arase (MIT).
-- Música: Cânone em Ré, de Johann Pachelbel (domínio público), sintetizado no navegador.

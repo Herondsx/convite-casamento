@@ -2,8 +2,8 @@
    CONFIGURAÇÃO DO CONVITE
    --------------------------------------------------------------------------
    Este é o ÚNICO arquivo que você precisa editar para personalizar o convite:
-   nomes, data, locais, programação, traje, presentes (PIX), confirmação de
-   presença (RSVP) e música. Salve, faça commit e o GitHub Pages atualiza.
+   nomes, data, locais, programação, traje, presentes (PIX) e confirmação de
+   presença (RSVP). Salve, faça commit e o GitHub Pages atualiza.
 
    Dica: links personalizados por convidado
      https://SEU-USUARIO.github.io/convite-casamento/?para=Tia%20Maria
@@ -94,12 +94,5 @@ window.CONVITE = {
        (passo a passo no README). Se preenchido, tem prioridade sobre o WhatsApp. */
     googleScriptUrl: '',
     maxPessoas: 4 // máximo de pessoas por confirmação (o link pode sobrescrever com ?max=)
-  },
-
-  musica: {
-    /* Opcional: caminho de um MP3 seu, ex. 'assets/audio/nossa-musica.mp3'.
-       Vazio = uma caixinha de música gerada no navegador (Cânone de Pachelbel). */
-    arquivo: '',
-    tocarAoAbrir: true
   }
 };

@@ -16,7 +16,7 @@
   const T = (ms) => (reduce ? Math.min(ms, 40) : ms);
   const NS = 'http://www.w3.org/2000/svg';
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const Som = window.Som || { unlock() {}, startMusic() {}, stopMusic() {}, toggle() {}, isOn: () => false, wantsSound: () => false, sfx() {}, onChange() {}, supported: false };
+  const Som = window.Som || { unlock() {}, toggle() {}, isOn: () => false, sfx() {}, onChange() {}, supported: false };
   const FX = window.FX || { init() {}, petals() {}, heart() {}, crumbs() {}, attract() {}, scatter() {} };
   const params = new URLSearchParams(location.search);
   // durante a intro o conteúdo não é renderizado (content-visibility); medir algo
@@ -823,11 +823,16 @@
     btn.hidden = false;
     const sync = (on) => {
       btn.setAttribute('aria-pressed', String(on));
-      btn.setAttribute('aria-label', on ? 'Pausar música' : 'Tocar música');
+      btn.setAttribute('aria-label', on ? 'Desativar sons' : 'Ativar sons');
     };
-    sync(false);
+    sync(Som.isOn());
     Som.onChange(sync);
-    btn.addEventListener('click', () => { Som.unlock(); Som.toggle(); });
+    btn.addEventListener('click', () => {
+      Som.unlock();
+      Som.toggle();
+      Som.sfx('pop'); // só toca se acabou de ligar
+      toast(Som.isOn() ? 'Sons ativados' : 'Sons desativados');
+    });
   }
 
   /* ------------------------------------------------------------------
@@ -947,7 +952,6 @@
       if (state !== 'front' || busy) return;
       busy = true;
       Som.unlock();
-      if ((C.musica || {}).tocarAoAbrir !== false && Som.wantsSound()) Som.startMusic();
       Som.sfx('paper');
       setHint('');
       setState('flipping');
