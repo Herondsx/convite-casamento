@@ -788,7 +788,7 @@ html.is-revealed .scroll-cue { opacity: 1; }
 .hero__tip .ic { fill: var(--lilac); stroke: none; }
 html.is-revealed .hero__tip { opacity: .8; }
 html.is-scrolled .hero__tip { opacity: 0; transition-delay: 0s; }
-@media (max-width: 560px) { .hero__tip { font-size: .85rem; right: .9rem; bottom: calc(1.4rem + var(--safe-b)); } }
+@media (max-width: 560px) { .hero__tip { font-size: .85rem; right: .9rem; bottom: calc(6.6rem + var(--safe-b)); } }
 
 .float-heart {
   position: absolute; z-index: 3; width: 92px; height: 92px; margin: -46px 0 0 -46px; pointer-events: none;
