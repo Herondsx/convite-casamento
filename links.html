@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Gerar links personalizados · Convite</title>
+  <link rel="icon" href="assets/img/favicon-32.png" sizes="32x32" type="image/png">
+  <style>
+    @font-face { font-family: 'Corinthia'; font-weight: 700; font-display: swap; src: url(assets/fonts/corinthia-latin-700-normal.woff2) format('woff2'); }
+    @font-face { font-family: 'EB Garamond'; font-weight: 400; font-display: swap; src: url(assets/fonts/eb-garamond-latin-400-normal.woff2) format('woff2'); }
+    @font-face { font-family: 'EB Garamond'; font-weight: 500; font-display: swap; src: url(assets/fonts/eb-garamond-latin-500-normal.woff2) format('woff2'); }
+    @font-face { font-family: 'EB Garamond'; font-style: italic; font-weight: 400; font-display: swap; src: url(assets/fonts/eb-garamond-latin-400-italic.woff2) format('woff2'); }
+    @font-face { font-family: 'Jost'; font-weight: 400; font-display: swap; src: url(assets/fonts/jost-latin-400-normal.woff2) format('woff2'); }
+    @font-face { font-family: 'Jost'; font-weight: 500; font-display: swap; src: url(assets/fonts/jost-latin-500-normal.woff2) format('woff2'); }
+    :root { --ink: #1b293d; --ink-2: #3c4b61; --ink-3: #6a7689; --paper: #f5f2eb; --night: #0d1724; --lilac: #6f5b8c; }
+    * { box-sizing: border-box; }
+    html { background: var(--night); }
+    body {
+      margin: 0; min-height: 100vh; padding: 3rem 1rem 4rem;
+      font-family: 'EB Garamond', Garamond, serif; font-size: 1.05rem; color: var(--ink);
+      background: radial-gradient(80% 60% at 50% 0%, #1c2d44, var(--night) 70%) fixed;
+    }
+    .card {
+      max-width: 52rem; margin: 0 auto; padding: clamp(1.6rem, 5vw, 3rem);
+      background: linear-gradient(rgba(246, 243, 236, .9), rgba(246, 243, 236, .9)), url(assets/img/papel-relevo-tile.webp) 0 0 / 360px;
+      border-radius: 3px; box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .8);
+    }
+    h1 { font-family: 'Corinthia', cursive; font-weight: 700; font-size: clamp(3rem, 10vw, 4.4rem); line-height: .9; margin: 0 0 .3rem; text-align: center; }
+    .sub { text-align: center; font-style: italic; color: var(--ink-2); margin: 0 0 2rem; }
+    label { display: block; font-family: Jost, sans-serif; font-size: .7rem; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-3); margin: 1.4rem 0 .5rem; }
+    textarea, input {
+      width: 100%; font: inherit; color: var(--ink); background: rgba(255, 255, 255, .55);
+      border: 1px solid rgba(27, 41, 61, .25); border-radius: 6px; padding: .7rem .85rem;
+    }
+    textarea { min-height: 9rem; resize: vertical; line-height: 1.45; }
+    .hint { font-size: .98rem; color: var(--ink-3); margin: .4rem 0 0; }
+    code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .85em; background: rgba(27, 41, 61, .07); padding: .1em .35em; border-radius: 4px; }
+    .row { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.4rem; }
+    button, .btn {
+      display: inline-flex; align-items: center; gap: .5em; cursor: pointer; text-decoration: none;
+      font-family: Jost, sans-serif; font-size: .7rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase;
+      padding: .8em 1.3em; border-radius: 999px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+    }
+    .ghost { background: transparent; color: var(--ink); border-color: rgba(27, 41, 61, .35); }
+    button:hover, .btn:hover { filter: brightness(1.15); }
+    ul { list-style: none; padding: 0; margin: 2rem 0 0; }
+    li { display: grid; grid-template-columns: 1fr auto; gap: .4rem 1rem; align-items: center; padding: .9rem 0; border-top: 1px solid rgba(27, 41, 61, .14); }
+    li .who { font-weight: 500; font-size: 1.25rem; }
+    li .who small { font-family: Jost, sans-serif; font-size: .7rem; letter-spacing: .12em; color: var(--ink-3); margin-left: .5em; }
+    li .url { grid-column: 1 / -1; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .8rem; color: var(--ink-2); word-break: break-all; }
+    li .acts { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: flex-end; }
+    li .acts > * { padding: .6em 1em; font-size: .62rem; }
+    .back { display: block; text-align: center; margin-top: 2rem; color: #b9c6d5; font-family: Jost, sans-serif; font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; }
+    .toast { position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 30px); opacity: 0; transition: .3s; background: #f5f2eb; color: var(--ink); padding: .7rem 1.2rem; border-radius: 999px; font-family: Jost, sans-serif; font-size: .8rem; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+    .toast.on { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1 id="titulo">Links personalizados</h1>
+    <p class="sub">Cada convidado recebe um link com o próprio nome escrito no envelope.</p>
+
+    <label for="lista">Convidados — um por linha</label>
+    <textarea id="lista" placeholder="Tia Maria&#10;Família Silva; 4&#10;João e Ana; 2"></textarea>
+    <p class="hint">Opcional: depois de <code>;</code> informe quantas pessoas aquele convite permite (ex.: <code>Família Silva; 4</code>).</p>
+
+    <label for="msg">Mensagem para enviar junto</label>
+    <textarea id="msg" style="min-height:6rem"></textarea>
+    <p class="hint">Use <code>{nome}</code> e <code>{link}</code> — eles serão trocados automaticamente.</p>
+
+    <label for="base">Endereço do convite</label>
+    <input id="base" type="url">
+
+    <div class="row">
+      <button id="gerar" type="button">Gerar links</button>
+      <button id="copiarTodos" class="ghost" type="button">Copiar todos</button>
+    </div>
+
+    <ul id="saida"></ul>
+  </main>
+  <a class="back" href="./">← voltar ao convite</a>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="assets/js/config.js"></script>
+  <script>
+    (() => {
+      const C = window.CONVITE || {};
+      const n1 = (C.noivos && C.noivos.primeiro && C.noivos.primeiro.nome) || 'Heron';
+      const n2 = (C.noivos && C.noivos.segundo && C.noivos.segundo.nome) || 'Daniela';
+      const $ = (s) => document.querySelector(s);
+      const base = location.href.replace(/links\.html.*$/, '');
+      $('#base').value = base;
+      $('#msg').value = `Olá, {nome}! 💌\nPreparamos um convite especial para você — abra o envelope:\n{link}\n\nCom carinho, ${n1} & ${n2}`;
+      try {
+        $('#lista').value = localStorage.getItem('convite:links:lista') || '';
+        const m = localStorage.getItem('convite:links:msg');
+        if (m) $('#msg').value = m;
+      } catch (e) { /* ok */ }
+
+      const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      let links = [];
+
+      function gerar() {
+        const b = $('#base').value.trim().replace(/[?#].*$/, '');
+        const tpl = $('#msg').value;
+        try {
+          localStorage.setItem('convite:links:lista', $('#lista').value);
+          localStorage.setItem('convite:links:msg', tpl);
+        } catch (e) { /* ok */ }
+        links = $('#lista').value.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
+          const [nome, max] = l.split(';').map((x) => x.trim());
+          const q = new URLSearchParams({ para: nome });
+          if (max && +max > 0) q.set('max', String(parseInt(max, 10)));
+          const link = `${b}?${q.toString().replace(/\+/g, '%20')}`;
+          const texto = tpl.replace(/\{nome\}/g, nome).replace(/\{link\}/g, link);
+          return { nome, max, link, texto };
+        });
+        $('#saida').innerHTML = links.map((x, i) => `
+          <li>
+            <span class="who">${esc(x.nome)}${x.max ? `<small>até ${esc(x.max)} pessoas</small>` : ''}</span>
+            <span class="acts">
+              <button type="button" class="ghost" data-copy="${i}">Copiar</button>
+              <a class="btn" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(x.texto)}">WhatsApp</a>
+              <a class="btn ghost" target="_blank" rel="noopener" href="${esc(x.link)}">Ver</a>
+            </span>
+            <span class="url">${esc(x.link)}</span>
+          </li>`).join('');
+      }
+
+      async function copy(t) {
+        try { await navigator.clipboard.writeText(t); return true; } catch (e) {
+          const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select();
+          let ok = false; try { ok = document.execCommand('copy'); } catch (_) {} ta.remove(); return ok;
+        }
+      }
+      function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 1800); }
+
+      $('#gerar').addEventListener('click', gerar);
+      $('#saida').addEventListener('click', async (e) => {
+        const b = e.target.closest('[data-copy]');
+        if (!b) return;
+        const x = links[+b.dataset.copy];
+        toast((await copy(x.texto)) ? `Mensagem de ${x.nome} copiada` : 'Não consegui copiar');
+      });
+      $('#copiarTodos').addEventListener('click', async () => {
+        if (!links.length) gerar();
+        const t = links.map((x) => `${x.nome}\t${x.link}`).join('\n');
+        toast((await copy(t)) ? `${links.length} links copiados` : 'Não consegui copiar');
+      });
+      if ($('#lista').value.trim()) gerar();
+    })();
+  </script>
+</body>
+</html>
